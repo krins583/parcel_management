@@ -1,0 +1,38 @@
+/* src/components/StudentNavigation.css */
+.student-sidebar {
+  background-color: #0f172a;
+}
+.student-logo {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.nav-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.logout-btn-nav {
+  width: 100%;
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.logout-btn-nav:hover {
+  background: #ef4444;
+  color: white;
+}

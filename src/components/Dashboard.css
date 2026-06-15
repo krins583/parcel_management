@@ -1,0 +1,451 @@
+  /* src/components/Dashboard.css */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  .dashboard-wrapper {
+    padding: 40px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .delay {
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Premium Header */
+  .premium-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    padding: 24px 32px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+  }
+
+  .header-content h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header-content p {
+    color: #64748b;
+    margin: 6px 0 0 0;
+    font-size: 15px;
+  }
+
+  /* Premium Logout Button */
+  .premium-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #fff;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+  }
+
+  .premium-logout-btn:hover {
+    background-color: #fef2f2;
+    border-color: #f87171;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+  }
+
+  .logout-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: #64748b;
+  }
+
+  .premium-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  /* Grid Layout */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  /* Premium Stat Cards */
+  .premium-card {
+    padding: 32px;
+    border-radius: 20px;
+    color: white;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+
+  .premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-icon {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 14px;
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+  }
+
+  .card-icon svg {
+    width: 28px;
+    height: 28px;
+    color: white;
+  }
+
+  .card-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 500;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    margin: 0;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .stat-label {
+    display: block;
+    margin-top: 12px;
+    font-size: 14px;
+    opacity: 0.8;
+    font-weight: 500;
+  }
+
+  /* Modern Gradients */
+  .primary-gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .warning-gradient {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+  }
+
+  .neutral-gradient {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%);
+    border: 1px solid rgba(71, 85, 105, 0.2);
+  }
+
+  /* System Overview Box */
+  .system-overview {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  }
+
+  .overview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .pulse-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .overview-header h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 18px;
+  }
+
+  .system-overview p {
+    margin: 0;
+    color: #475569;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .tv-gradient {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    position: relative;
+  }
+  .tv-gradient:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(109, 40, 217, 0.4);
+  }
+  @keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+  }
+
+  /* =========================================
+    📺 TV FULL SCREEN MODE STYLING 📺
+    ========================================= */
+  /* =========================================
+   📺 TV FULL SCREEN MODE STYLING 📺
+   ========================================= */
+/* =========================================
+   📺 TV FULL SCREEN MODE STYLING 📺
+   ========================================= */
+.tv-mode-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #020617; /* Pitch black for TV */
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  overflow: hidden;
+}
+
+.tv-header {
+  background: #0f172a;
+  padding: 25px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 5px solid #3b82f6;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  z-index: 10;
+}
+
+.tv-header h1 {
+  font-size: 52px; 
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #f8fafc;
+  text-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
+}
+
+.tv-collection-time {
+  font-size: 30px;
+  color: #fef08a; /* Yellow color for attention */
+  margin: 10px 0 0 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.tv-time-close {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.pulse-dot-red {
+  width: 16px;
+  height: 16px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.close-tv-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: 2px solid #334155;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.close-tv-btn:hover {
+  background: #334155;
+  color: white;
+}
+
+/* -------------------------------------
+   TV DATA STRUCTURE (Fixed Head, Scroll Body)
+---------------------------------------- */
+.tv-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 50px;
+  overflow: hidden;
+  background: repeating-linear-gradient(0deg, #020617, #020617 2px, #060c21 2px, #060c21 4px); 
+}
+
+.tv-data-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Shared Table CSS to keep columns aligned */
+.tv-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 15px; 
+}
+
+.tv-header-fixed {
+  margin-bottom: 0;
+  z-index: 5;
+}
+
+.tv-table th {
+  background: rgba(15, 23, 42, 0.9);
+  color: #94a3b8;
+  padding: 25px 30px;
+  font-size: 26px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: left;
+  border-radius: 12px;
+}
+.tv-table th.text-center { text-align: center; }
+
+/* The Viewport that hides the overflowing rows */
+.tv-scroll-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  margin-top: -15px; /* Adjusting for gap */
+}
+
+/* The Animated Div that contains the Table Body */
+.tv-scroll-content {
+  /* Dheere scroll karega, aur end tak pohach kar seamlessly repeat ho jayega */
+  animation: scrollVertical 20s linear infinite; 
+}
+
+/* MAGIC: Ye -50% isliye hai kyunki humne React me array ko do baar (duplicate) print kiya hai */
+@keyframes scrollVertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); } 
+}
+
+/* Row Styling */
+.tv-row td {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(5px);
+  padding: 30px 40px;
+  border-top: 2px solid rgba(255,255,255,0.08);
+  border-bottom: 2px solid rgba(255,255,255,0.08);
+}
+.tv-row td:first-child { border-left: 8px solid #3b82f6; border-radius: 12px 0 0 12px; }
+.tv-row td:last-child { border-radius: 0 12px 12px 0; border-right: 2px solid rgba(255,255,255,0.08); }
+
+.tv-name { font-size: 42px; font-weight: 700; color: #ffffff; }
+.tv-room { font-size: 48px; font-weight: 800; color: #38bdf8; }
+.tv-pin { font-size: 52px; font-weight: 800; color: #4ade80; letter-spacing: 4px; }
+
+/* Empty State */
+.tv-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.tv-empty h2 { font-size: 60px; margin-bottom: 20px; color: #475569; }
+.tv-empty p { font-size: 30px; color: #334155; }

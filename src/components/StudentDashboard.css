@@ -1,0 +1,145 @@
+/* src/components/StudentDashboard.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.dashboard-wrapper {
+  padding: 40px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Animations */
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.delay { animation-delay: 0.15s; opacity: 0; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Styling */
+.premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 24px 32px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+}
+
+.header-content h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.header-content p {
+  color: #3b82f6; /* Blue accent for PIN/Room */
+  margin: 8px 0 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Buttons & Tabs */
+.premium-logout-btn {
+  background-color: #ffffff;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+}
+
+.premium-logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.primary-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Main Content Box */
+.system-overview {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
+.system-overview h3 {
+  margin-top: 0;
+  color: #0f172a;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.system-overview p {
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+/* Pulse Dot for Profile Status */
+.pulse-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Premium Form Inputs for Student Dashboard */
+input[type="text"], 
+input[type="password"] {
+  outline: none;
+  transition: all 0.2s ease;
+  color: #1e293b;
+  background-color: #f8fafc;
+}
+
+input[type="text"]:focus, 
+input[type="password"]:focus {
+  border-color: #3b82f6 !important;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Profile Grid Hover Effect */
+.system-overview > div > div > div {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.system-overview > div > div > div:hover {
+  transform: translateY(-4px);
+  background: #ffffff !important;
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
