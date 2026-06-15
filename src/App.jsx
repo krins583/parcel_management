@@ -1,34 +1,34 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 
-// Components
-import Navigation from './components/Navigation';
-import Dashboard from './components/Dashboard';
-import Login from './components/Login';
-import CreateStudent from './components/CreateStudent';
-import StudentList from './components/StudentList';
-import PinAllocation from './components/PinAllocation';
-import HostelLeave from './components/HostelLeave';
-import ManageParcels from './components/ManageParcels';
-import ParcelHistory from './components/ParcelHistory';
-import CreateUser from './components/CreateUser';
-import ManageUsers from './components/ManageUsers';
+// Components (Lazy Loaded for Optimization)
+const Navigation = lazy(() => import('./components/Navigation'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const Login = lazy(() => import('./components/Login'));
+const CreateStudent = lazy(() => import('./components/CreateStudent'));
+const StudentList = lazy(() => import('./components/StudentList'));
+const PinAllocation = lazy(() => import('./components/PinAllocation'));
+const HostelLeave = lazy(() => import('./components/HostelLeave'));
+const ManageParcels = lazy(() => import('./components/ManageParcels'));
+const ParcelHistory = lazy(() => import('./components/ParcelHistory'));
+const CreateUser = lazy(() => import('./components/CreateUser'));
+const ManageUsers = lazy(() => import('./components/ManageUsers'));
 
 // Student Components
-import StudentNavigation from './components/StudentNavigation';
-import StudentHome from './components/StudentHome';
-import StudentProfile from './components/StudentProfile';
-import StudentParcel from './components/StudentParcel';
-import StudentSettings from './components/StudentSettings';
+const StudentNavigation = lazy(() => import('./components/StudentNavigation'));
+const StudentHome = lazy(() => import('./components/StudentHome'));
+const StudentProfile = lazy(() => import('./components/StudentProfile'));
+const StudentParcel = lazy(() => import('./components/StudentParcel'));
+const StudentSettings = lazy(() => import('./components/StudentSettings'));
 
-// Public Component (New)
-import PublicParcel from './components/PublicParcel';
+// Public Component
+const PublicParcel = lazy(() => import('./components/PublicParcel'));
 
 // ----------------------------------------------------
-// AUTH WRAPPER: Handles Admin, Student & Login screens
+// AUTH WRAPPER
 // ----------------------------------------------------
 function AuthWrapper() {
   const [adminUser, setAdminUser] = useState(null);
@@ -53,64 +53,61 @@ function AuthWrapper() {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><h2>Loading Secure Portal...</h2></div>;
   }
 
-  // Agar koi login nahi hai
   if (!adminUser && !studentUser) {
     return <Login />;
   }
 
-  // STUDENT VIEW
   if (studentUser) {
     return (
       <div style={{ display: 'flex' }}>
         <StudentNavigation />
         <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)', minHeight: '100vh', backgroundColor: '#f8fafc', boxSizing: 'border-box' }}>
-          <Routes>
-            <Route path="/" element={<StudentHome />} />
-            <Route path="/profile" element={<StudentProfile />} />
-            <Route path="/create-parcel" element={<StudentParcel />} />
-            <Route path="/settings" element={<StudentSettings />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<StudentHome />} />
+              <Route path="/profile" element={<StudentProfile />} />
+              <Route path="/create-parcel" element={<StudentParcel />} />
+              <Route path="/settings" element={<StudentSettings />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
     );
   }
 
-  // ADMIN VIEW
   return (
     <div style={{ display: 'flex' }}>
       <Navigation />
       <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)', minHeight: '100vh', backgroundColor: '#f8fafc', boxSizing: 'border-box' }}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/create-student" element={<CreateStudent />} />
-          <Route path="/student-list" element={<StudentList />} />
-          <Route path="/pin-allocation" element={<PinAllocation />} />
-          <Route path="/hostel-leave" element={<HostelLeave />} />
-          <Route path="/manage-parcels" element={<ManageParcels />} />
-          <Route path="/parcel-history" element={<ParcelHistory />} />
-          <Route path="/create-user" element={<CreateUser />} />
-<Route path="/manage-users" element={<ManageUsers />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/create-student" element={<CreateStudent />} />
+            <Route path="/student-list" element={<StudentList />} />
+            <Route path="/pin-allocation" element={<PinAllocation />} />
+            <Route path="/hostel-leave" element={<HostelLeave />} />
+            <Route path="/manage-parcels" element={<ManageParcels />} />
+            <Route path="/parcel-history" element={<ParcelHistory />} />
+            <Route path="/create-user" element={<CreateUser />} />
+            <Route path="/manage-users" element={<ManageUsers />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Suspense>
       </div>
     </div>
   );
 }
 
-// ----------------------------------------------------
-// MAIN APP ROUTER: Contains Public Route & Auth Routes
-// ----------------------------------------------------
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* PUBLIC ROUTE - accessible by anyone without login */}
-        <Route path="/public-parcel" element={<PublicParcel />} />
-        
-        {/* PROTECTED ROUTES - handled by AuthWrapper */}
-        <Route path="/*" element={<AuthWrapper />} />
-      </Routes>
+      <Suspense fallback={<div>Loading App...</div>}>
+        <Routes>
+          <Route path="/public-parcel" element={<PublicParcel />} />
+          <Route path="/*" element={<AuthWrapper />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }
