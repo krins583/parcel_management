@@ -26,10 +26,6 @@ function PublicParcel() {
   const [mobileNumber, setMobileNumber] = useState('');
   const [remarks, setRemarks] = useState('');
 
-  // === TELEGRAM BOT CONFIGURATION ===
-const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
-
   useEffect(() => {
     const storedStaff = localStorage.getItem('hostel_staff');
     if (storedStaff) {
@@ -146,37 +142,42 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
     }
   };
 
-  const sendTelegramNotification = async (parcel, receiveTime, givenBy) => {
-    const message = `
-📦 *PARCEL DELIVERED TO STUDENT* 📦
+  // === NAYA EMAIL FUNCTION ===
+  const sendEmailNotification = async (parcel, receiveTime) => {
+    // Fallback email agar student ka email database mein save nahi hai
+    const studentEmail = studentData?.email || parcel.studentEmail || "testemail@gmail.com";
 
-👤 *Student:* ${parcel.studentName}
-🔢 *PIN:* ${parcel.pin} | *Room:* ${parcel.roomNumber}
-
-📦 *Items:* ${parcel.parcelName} (${parcel.parcelType})
-🏢 *Sender:* ${parcel.senderName}
-
-🤝 *Handed Over By:* ${givenBy} (Staff)
-🕒 *Time:* ${receiveTime}
-✅ *Status:* Successfully collected!
-    `;
-
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     try {
-      await fetch(url, {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'Markdown' })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          toEmail: studentEmail,
+          studentName: parcel.studentName,
+          parcelName: parcel.parcelName,
+          senderName: parcel.senderName,
+          roomNumber: parcel.roomNumber,
+          receiveTime: receiveTime
+        })
       });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log("Email notification sent successfully!");
+      } else {
+        console.error("Email API failed:", data.message);
+      }
     } catch (error) {
-      console.error("Failed to send Telegram message:", error);
+      console.error("Failed to call Email API:", error);
     }
   };
 
   const handleMarkReceived = async (parcel) => {
     const givenBy = staffUser.username; 
 
-    if(window.confirm(`Confirm handing over this parcel to ${studentData.name}?`)) {
+    if(window.confirm(`Confirm handing over this parcel to ${studentData.name}? An Email notification will be sent.`)) {
       try {
         const now = new Date();
         const formattedTime = now.toLocaleString('en-IN', { 
@@ -190,9 +191,10 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
           receivedBy: givenBy 
         });
 
-        await sendTelegramNotification(parcel, formattedTime, givenBy);
+        // Apni nayi Vercel API ko call kar rahe hain
+        await sendEmailNotification(parcel, formattedTime);
 
-        alert("Parcel successfully marked as received!");
+        alert("Parcel successfully marked as received and Email sent!");
         setPendingParcels(prev => prev.filter(p => p.id !== parcel.id));
       } catch (error) {
         console.error(error);
@@ -207,7 +209,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
       <div className="elite-wrapper login-bg">
         <div className="elite-glass-card login-card fade-in">
           
-          {/* Logo Integration Here */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
             <img 
               src="/logo.png" 
@@ -265,10 +266,8 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
     <div className="elite-wrapper app-bg">
       <div className="elite-glass-card main-app-card fade-in">
         
-        {/* Elite Top Navigation */}
         <div className="elite-top-nav">
           <div className="nav-profile">
-            {/* Logo Integration in Top Nav */}
             <div className="nav-avatar" style={{ background: 'transparent', padding: '0' }}>
               <img 
                 src="/logo.png" 
@@ -298,7 +297,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
           </div>
         )}
 
-        {/* Elite Search Bar */}
         <form onSubmit={handleSearchStudent} className="elite-search-form">
           <div className="search-bar-wrapper">
             <svg className="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -319,7 +317,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
         {studentData && (
           <div className="elite-data-section fade-in-up">
             
-            {/* Premium ID Card Style Student Box */}
             <div className="elite-id-card">
               <div className="id-card-bg"></div>
               <div className="id-content">
@@ -334,7 +331,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
               </div>
             </div>
 
-            {/* Pending Parcels - Ticket Style */}
             <div className="elite-section">
               <div className="section-title-flex">
                 <h3>Pending Parcels</h3>
@@ -373,7 +369,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
 
             <div className="elite-divider"><span>OR</span></div>
 
-            {/* Add New Parcel Form */}
             <form onSubmit={handleParcelSubmit} className="elite-form neumorphic-form">
               <h3 className="section-title">➕ Register Incoming Parcel</h3>
               
