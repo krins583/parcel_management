@@ -8,11 +8,6 @@ function ManageParcels() {
   const [parcels, setParcels] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // === TELEGRAM BOT CONFIGURATION ===
-  // Note: Yahan apna actual Bot Token aur Chat ID (Group ya User) replace karna hoga
-const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
-
   const fetchExpectedParcels = async () => {
     try {
       const q = query(collection(db, 'parcels'), where('status', '==', 'Expected'));
@@ -31,44 +26,40 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
     fetchExpectedParcels();
   }, []);
 
-  // Telegram Message Bhejne ka Function
-  // Telegram Message Bhejne ka Function
-  const sendTelegramNotification = async (parcel, receiveTime) => {
-    const message = `
-📦 *PARCEL DELIVERED TO STUDENT* 📦
-
-👤 *Student Name:* ${parcel.studentName}
-🔢 *PIN:* ${parcel.pin} | *Room:* ${parcel.roomNumber}
-📱 *Reg. Mobile:* ${parcel.mobileNumber}
-
-📦 *Parcel Details:* ${parcel.parcelName} (${parcel.parcelType})
-🏢 *Sender:* ${parcel.senderName}
-🔍 *Tracking:* ${parcel.trackingId || 'N/A'}
-
-🕒 *Handed Over At:* ${receiveTime}
-✅ *Status:* Successfully received by the student!
-    `;
-
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+  // === Naya Email Bhejne ka Function (Vercel Serverless API) ===
+  const sendEmailNotification = async (parcel, receiveTime) => {
+    // Agar student ka email database mein hai to wo use hoga, warna fallback test email jayega
+    const studentEmail = parcel.studentEmail || "testemail@gmail.com"; 
 
     try {
-      await fetch(url, {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message,
-          parse_mode: 'Markdown'
+          toEmail: studentEmail,
+          studentName: parcel.studentName,
+          parcelName: parcel.parcelName,
+          senderName: parcel.senderName,
+          roomNumber: parcel.roomNumber,
+          receiveTime: receiveTime
         })
       });
-      console.log("Telegram notification sent successfully!");
+
+      const data = await response.json();
+      if (data.success) {
+        console.log("Email notification sent successfully!");
+      } else {
+        console.error("Email API failed:", data.message);
+      }
     } catch (error) {
-      console.error("Failed to send Telegram message:", error);
+      console.error("Failed to call Email API:", error);
     }
   };    
 
   const handleReceiveParcel = async (parcel) => {
-    if(window.confirm(`Mark parcel for ${parcel.studentName} as received? A Telegram notification will be sent.`)) {
+    if(window.confirm(`Mark parcel for ${parcel.studentName} as received? An Email notification will be sent.`)) {
       try {
         const now = new Date();
         const formattedTime = now.toLocaleString('en-IN', { 
@@ -83,10 +74,10 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
           receivedBy: 'Admin (Main Desk)' 
         });
 
-        // 2. Telegram Notification Bhejna
-        await sendTelegramNotification(parcel, formattedTime);
+        // 2. Apni API se Email bhejein
+        await sendEmailNotification(parcel, formattedTime);
 
-        alert("Parcel marked as received and notification sent!");
+        alert("Parcel marked as received and Email sent!");
         fetchExpectedParcels(); // List se hatakar History mein bhej dega
       } catch (err) {
         console.error("Error receiving parcel:", err);
@@ -136,7 +127,6 @@ const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
                       {p.remarks || '-'}
                     </td>
                     <td className="text-right">
-                      {/* Bhejne ke liye poora 'p' object pass kar rahe hain */}
                       <button onClick={() => handleReceiveParcel(p)} style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                         Mark Received
                       </button>
