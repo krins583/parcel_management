@@ -4,7 +4,7 @@
 .premium-page-container {
   padding: 40px;
   display: flex;
-  justify-content: center; /* Form ko poori screen ke center mein laane ke liye */
+  justify-content: center;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   width: 100%;
   box-sizing: border-box;
@@ -82,12 +82,6 @@
   gap: 10px;
 }
 
-.alert-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
 .premium-alert.success {
   background-color: #f0fdf4;
   color: #166534;
@@ -151,7 +145,7 @@
 .input-wrapper input, 
 .input-wrapper select {
   width: 100%;
-  padding: 14px 14px 14px 42px; /* Extra left padding for icon */
+  padding: 14px 14px 14px 42px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   font-size: 15px;
@@ -166,7 +160,6 @@
   color: #94a3b8;
 }
 
-/* Select Box custom arrow styling adjustment */
 .input-wrapper select {
   cursor: pointer;
   appearance: none;
@@ -211,11 +204,6 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
-.premium-submit-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
 .premium-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
@@ -239,4 +227,15 @@
   border-radius: 50%;
   border-top-color: #ffffff;
   animation: spin 0.8s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .half-width {
+    width: 100%;
+  }
 }

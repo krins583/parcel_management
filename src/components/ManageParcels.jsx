@@ -43,7 +43,8 @@ function ManageParcels() {
           parcelName: parcel.parcelName,
           senderName: parcel.senderName,
           roomNumber: parcel.roomNumber,
-          receiveTime: receiveTime
+          receiveTime: receiveTime,
+          handedBy: staffUser.username
         })
       });
 

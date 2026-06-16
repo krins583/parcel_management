@@ -76,16 +76,17 @@ function StudentList() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Track already assigned PINs to prevent duplicates during upload
-        const existingPins = new Set();
+        // Map existing PINs to their document IDs for updates
+        const existingPinsMap = new Map();
         students.forEach(s => {
           if (s.hasPin && s.assignedPin) {
-            existingPins.add(String(s.assignedPin));
+            existingPinsMap.set(String(s.assignedPin), s.id);
           }
         });
 
         const uploadPromises = [];
         let addedCount = 0;
+        let updatedCount = 0;
         let skippedPins = 0;
 
         for (let row of jsonData) {
@@ -95,21 +96,21 @@ function StudentList() {
           const standard = String(row['Standard'] || row['standard'] || '6');
           const roomNumber = String(row['Room'] || row['room'] || row['Room Number'] || '');
           const phone = String(row['Phone'] || row['phone'] || '');
+          const email = String(row['Email'] || row['email'] || '');
           
           let rawPin = row['PIN'] || row['Pin'] || row['pin'];
           let pin = rawPin ? String(rawPin).trim() : null;
           let hasPin = false;
 
-          // Check if PIN is provided, is valid (1-1000), and is not already taken
+          // Check if PIN is valid
           if (pin) {
-            const pinNum = parseInt(pin);
-            if (existingPins.has(pin) || pinNum < 1 || pinNum > 1000) {
-              pin = null; // Reject this specific PIN but add the student
-              skippedPins++;
-            } else {
-              hasPin = true;
-              existingPins.add(pin); // Reserve this PIN so next rows don't take it
-            }
+              const pinNum = parseInt(pin);
+              if (pinNum < 1 || pinNum > 1000) {
+                 pin = null;
+                 skippedPins++;
+              } else {
+                 hasPin = true;
+              }
           }
 
           const studentData = {
@@ -117,21 +118,37 @@ function StudentList() {
             standard,
             roomNumber,
             phone,
+            email,
             hasPin,
             assignedPin: pin,
             status: 'active',
-            createdAt: new Date(),
-            assignedBy: hasPin ? 'Bulk Upload' : null,
-            pinAssignedAt: hasPin ? new Date() : null
           };
 
-          uploadPromises.push(addDoc(collection(db, 'students'), studentData));
-          addedCount++;
+          if (pin && existingPinsMap.has(pin)) {
+              // Update existing student
+              const docId = existingPinsMap.get(pin);
+              studentData.updatedAt = new Date();
+              studentData.updatedBy = 'Bulk Upload';
+              
+              uploadPromises.push(updateDoc(doc(db, 'students', docId), studentData));
+              updatedCount++;
+          } else {
+              // Create new student
+               studentData.createdAt = new Date();
+               studentData.assignedBy = hasPin ? 'Bulk Upload' : null;
+               studentData.pinAssignedAt = hasPin ? new Date() : null;
+
+               uploadPromises.push(addDoc(collection(db, 'students'), studentData));
+               if (pin) {
+                   existingPinsMap.set(pin, 'pending'); // Prevent same PIN from being added twice in the same file
+               }
+               addedCount++;
+          }
         }
 
         await Promise.all(uploadPromises);
         
-        alert(`Bulk Upload Complete! \n\nSuccessfully added ${addedCount} students.\n${skippedPins > 0 ? `Note: ${skippedPins} PINs were ignored because they were duplicates or out of range (1-1000).` : ''}`);
+        alert(`Bulk Upload Complete! \n\nSuccessfully added ${addedCount} new students.\nUpdated ${updatedCount} existing students.\n${skippedPins > 0 ? `Note: ${skippedPins} PINs were ignored because they were out of range (1-1000).` : ''}`);
         
         // Reset and Refresh
         fileInputRef.current.value = ""; 
@@ -195,6 +212,7 @@ function StudentList() {
                   <th>Student Profile</th>
                   <th>Standard</th>
                   <th>Room No.</th>
+                  <th>Email</th>
                   <th>PIN Status</th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -217,6 +235,9 @@ function StudentList() {
                       </td>
                       <td>
                         <span className="room-text">{student.roomNumber}</span>
+                      </td>
+                      <td>
+                          <span className="text-muted">{student.email || 'N/A'}</span>
                       </td>
                       <td>
                         {student.hasPin ? (
@@ -260,7 +281,7 @@ function StudentList() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="premium-empty-state">
+                    <td colSpan="6" className="premium-empty-state">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>

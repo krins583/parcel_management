@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { toEmail, studentName, parcelName, senderName, roomNumber, receiveTime } = req.body;
+  const { toEmail, studentName, parcelName, roomNumber, receiveTime, handedBy } = req.body;
 
   // Vercel Environment Variables se Email aur App Password lena
   const EMAIL_USER = process.env.VITE_EMAIL_USER; 
@@ -22,10 +22,10 @@ export default async function handler(req, res) {
   });
 
   const mailOptions = {
-    from: `"Hostel Parcel Desk" <${EMAIL_USER}>`,
+    from: `"SGVP Hostel Office" <${EMAIL_USER}>`,
     to: toEmail,
-    subject: `📦 Parcel Delivered: ${parcelName}`,
-    text: `Hello ${studentName},\n\nYour parcel from ${senderName} (Items: ${parcelName}) has been successfully delivered to the hostel desk.\n\nRoom: ${roomNumber}\nReceived At: ${receiveTime}\n\nPlease collect it soon.\n\nRegards,\nSGVP Parcel Desk`,
+    subject: `📦 Delivery Confirmation: Parcel Received`,
+    text: `Dear ${studentName},\n\nThis is a confirmation email to inform you that your parcel (${parcelName}) has been successfully handed over to you.\n\nDelivery Details:\n- Parcel Items: ${parcelName}\n- Room Number: ${roomNumber}\n- Handed Over At: ${receiveTime}\n- Processed By: ${handedBy || 'Hostel Staff'}\n\nIf you did not receive this parcel, please contact the hostel office immediately.\n\nWarm Regards,\nSGVP Hostel Office`,
   };
 
   try {
