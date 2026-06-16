@@ -20,7 +20,7 @@
 
 .app-bg {
   background: #f1f5f9;
-  align-items: flex-start; /* Better for scrolling content */
+  align-items: flex-start;
 }
 
 /* --- Glassmorphism Cards --- */
@@ -106,7 +106,6 @@
   align-items: center;
 }
 
-/* SVG Icon in inputs */
 .input-with-icon svg {
   position: absolute;
   left: 16px;
@@ -155,6 +154,42 @@
 
 .full-width { grid-column: 1 / -1; }
 
+/* --- Custom Tabs / Slide Bar --- */
+.elite-tabs-wrapper {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 14px;
+  padding: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.elite-tab-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  color: #64748b;
+  font-family: inherit;
+}
+
+.elite-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.elite-tab-btn:hover:not(.active) {
+  color: #334155;
+  background: rgba(255, 255, 255, 0.5);
+}
+
 /* --- Buttons --- */
 .elite-btn-primary {
   width: 100%;
@@ -201,7 +236,8 @@
   margin-top: 15px;
   box-sizing: border-box;
 }
-.elite-btn-success:hover { background: #059669; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2); }
+.elite-btn-success:hover:not(:disabled) { background: #059669; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2); }
+.elite-btn-success:disabled { background: #6ee7b7; cursor: wait; }
 
 /* --- Search Bar Magic --- */
 .search-bar-wrapper {
@@ -392,7 +428,7 @@
    ========================================= */
 @media (max-width: 600px) {
   .elite-wrapper { padding: 10px; align-items: flex-start; }
-  .login-bg { align-items: center; } /* Keep login centered */
+  .login-bg { align-items: center; } 
   
   .elite-glass-card { padding: 25px 20px; border-radius: 20px; }
   .login-card { padding: 35px 25px; margin-top: -50px; } 
@@ -409,5 +445,9 @@
   .badge-room, .badge-pin { justify-content: center; }
   
   .elite-btn-logout { padding: 8px 12px; }
-  .elite-btn-logout span { display: none; } /* Mobile par sirf icon dikhega, text hide ho jayega space bachane ke liye */
+  .elite-btn-logout span { display: none; } 
+  
+  /* Make tabs stack on very small screens if needed, otherwise keep them side-by-side */
+  .elite-tabs-wrapper { flex-direction: row; gap: 5px; }
+  .elite-tab-btn { font-size: 12px; padding: 10px; }
 }
