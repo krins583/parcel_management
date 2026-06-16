@@ -414,8 +414,19 @@
 
 /* The Animated Div that contains the Table Body */
 .tv-scroll-content {
-  /* Dheere scroll karega, aur end tak pohach kar seamlessly repeat ho jayega */
-  animation: scrollVertical 20s linear infinite; 
+  /* Default mein koi animation nahi hogi */
+  display: block;
+}
+
+/* Ye class tabhi apply hogi jab items 6 se zyada honge */
+.tv-scroll-active {
+  animation: scrollVertical 30s linear infinite; /* 30s for slow and smooth scroll */
+}
+
+/* MAGIC: Ye -50% isliye hai kyunki humne React me array ko do baar (duplicate) print kiya hai */
+@keyframes scrollVertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); } 
 }
 
 /* MAGIC: Ye -50% isliye hai kyunki humne React me array ko do baar (duplicate) print kiya hai */

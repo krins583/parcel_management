@@ -139,9 +139,11 @@ function Dashboard() {
                   </thead>
                 </table>
                 <div className="tv-scroll-viewport">
-                  <div className="tv-scroll-content">
+                  {/* Yahan Condition strictly 3 par set ki hai */}
+                  <div className={`tv-scroll-content ${pendingParcelsList.length > 3 ? 'tv-scroll-active' : ''}`}>
                     <table className="tv-table">
                       <tbody>
+                        {/* Pehli original list hamesha dikhegi */}
                         {pendingParcelsList.map((parcel, index) => (
                           <tr key={`first-${index}`} className="tv-row">
                             <td width="45%" className="tv-name">{parcel.studentName}</td>
@@ -149,7 +151,9 @@ function Dashboard() {
                             <td width="30%" className="text-center tv-pin">{parcel.pin}</td>
                           </tr>
                         ))}
-                        {pendingParcelsList.map((parcel, index) => (
+                        
+                        {/* Dusri (Duplicate) list sirf tabhi aayegi jab items 3 se zyada hon */}
+                        {pendingParcelsList.length > 3 && pendingParcelsList.map((parcel, index) => (
                           <tr key={`second-${index}`} className="tv-row">
                             <td width="45%" className="tv-name">{parcel.studentName}</td>
                             <td width="25%" className="text-center tv-room">{parcel.roomNumber}</td>
