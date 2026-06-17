@@ -1,7 +1,5 @@
 /* src/components/Login.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-/* src/components/Login.css ki sabse pehli class update karni hai */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .login-container {
   display: flex;
@@ -9,122 +7,119 @@
   align-items: center;
   height: 100vh;
   width: 100vw;
-  background-color: #0f172a;
-  position: fixed; /* Ye page ko poori screen par lock kar dega */
+  background-color: #020617; /* Very dark slate/blue */
+  position: fixed; 
   top: 0;
   left: 0;
   overflow: hidden;
-  z-index: 999; /* Isko sabse upar rakhne ke liye */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  z-index: 999; 
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Abstract glowing background shapes */
 .bg-shape {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(100px);
   z-index: 0;
-  opacity: 0.5;
+  opacity: 0.4;
+  animation: pulse-glow 8s infinite alternate;
 }
 
-.shape-1 {
-  width: 400px;
-  height: 400px;
-  background: #3b82f6; /* Blue glow */
-  top: -100px;
-  left: -100px;
-}
+.shape-1 { width: 450px; height: 450px; background: #2563eb; top: -100px; left: -100px; }
+.shape-2 { width: 350px; height: 350px; background: #7c3aed; bottom: -50px; right: -50px; animation-delay: 2s; }
+.shape-3 { width: 250px; height: 250px; background: #0ea5e9; top: 40%; left: 50%; transform: translate(-50%, -50%); animation-delay: 4s; opacity: 0.2; }
 
-.shape-2 {
-  width: 300px;
-  height: 300px;
-  background: #8b5cf6; /* Purple glow */
-  bottom: -50px;
-  right: -50px;
+@keyframes pulse-glow {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.1); opacity: 0.5; }
 }
 
 /* Glassmorphism Card */
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
   padding: 48px 40px;
   border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   box-sizing: border-box;
   z-index: 1;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Entry Animation */
-.fade-in {
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .brand-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 35px;
 }
 
 .logo-placeholder {
-  font-size: 48px;
-  margin-bottom: 16px;
-  display: inline-block;
-  animation: float 3s ease-in-out infinite;
+  width: 85px;
+  height: 85px;
+  margin: 0 auto 20px auto;
+  background: #ffffff;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+.sgvp-logo-login {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .login-card h2 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: #0f172a;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   letter-spacing: -0.5px;
 }
 
 .subtitle {
   color: #64748b;
-  font-size: 15px;
+  font-size: 13px;
   margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-/* Error Message Styling with Shake Animation */
+/* Error Message Styling */
 .error-msg {
-  color: #ef4444;
+  color: #dc2626;
   background-color: #fef2f2;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-radius: 12px;
-  font-size: 14px;
-  margin-bottom: 24px;
+  font-size: 13.5px;
+  margin-bottom: 25px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid #fee2e2;
-  font-weight: 500;
+  gap: 10px;
+  border: 1px solid #fecaca;
+  font-weight: 600;
 }
 
-.error-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
+.error-icon { width: 18px; height: 18px; flex-shrink: 0; }
 
-.shake {
-  animation: shake 0.4s ease-in-out;
-}
-
+.shake { animation: shake 0.4s ease-in-out; }
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -132,109 +127,102 @@
 }
 
 /* Input Fields */
-.input-group {
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-}
+.login-form { display: flex; flex-direction: column; }
 
+.input-group { margin-bottom: 22px; }
 .input-group label {
+  display: block;
   margin-bottom: 8px;
-  font-size: 14px;
-  color: #334155;
-  font-weight: 600;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.input-group input {
-  padding: 14px 16px;
-  border: 1.5px solid #e2e8f0;
+.input-with-icon { position: relative; display: flex; align-items: center; }
+
+.field-icon {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 500;
   outline: none;
   transition: all 0.2s ease;
   background-color: #f8fafc;
   color: #0f172a;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
-.input-group input::placeholder {
-  color: #94a3b8;
-}
-
-.input-group input:focus {
+.input-with-icon input::placeholder { color: #cbd5e1; }
+.input-with-icon input:focus {
   border-color: #3b82f6;
   background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.input-with-icon input:focus + .field-icon,
+.input-with-icon input:not(:placeholder-shown) + .field-icon {
+  color: #3b82f6;
 }
 
 /* Gradient Button */
 .login-btn {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  padding: 16px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-size: 16px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 52px;
+  gap: 10px;
+  margin-top: 10px;
+  font-family: inherit;
 }
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
 }
 
-.login-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
+.login-btn:active:not(:disabled) { transform: translateY(0); }
 .login-btn:disabled {
   background: #cbd5e1;
   box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Animated Loading Spinner */
 .spinner {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: #ffffff;
-  animation: spin 0.8s ease-in-out infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* Add to Login.css */
-.login-toggle {
-  display: flex;
-  background: #f1f5f9;
-  border-radius: 12px;
-  padding: 6px;
-  margin-bottom: 24px;
-}
-.toggle-btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.toggle-btn.active {
-  background: white;
-  color: #0f172a;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }

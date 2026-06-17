@@ -6,13 +6,16 @@ import './Navigation.css';
 function Navigation() {
   return (
     <div className="premium-sidebar">
+      
+      {/* --- UPDATED BRANDING SECTION --- */}
       <div className="sidebar-brand">
         <div className="brand-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
+          <img src="/logo.png" alt="SGVP Logo" className="sgvp-logo-img" />
         </div>
-        <h2>Hostel Hub</h2>
+        <div className="brand-text">
+          <h2>SGVP Hostel</h2>
+          <span>Parcel Management</span>
+        </div>
       </div>
       
       <div className="nav-scroll-area">
