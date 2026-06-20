@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // <-- Isko aise update karein
+import autoTable from 'jspdf-autotable'; 
 import { db } from '../firebase';
-import './ParcelHistory.css'; // Nayi Premium CSS file link ki hai
+import './ParcelHistory.css'; 
 
 function ParcelHistory() {
   const [history, setHistory] = useState([]);
@@ -41,7 +41,6 @@ function ParcelHistory() {
   useEffect(() => {
     let result = history;
 
-    // Filter by PIN
     if (searchPin.trim() !== '') {
       result = result.filter(p => 
         String(p.pin).includes(searchPin.trim()) || 
@@ -49,7 +48,6 @@ function ParcelHistory() {
       );
     }
 
-    // Filter by Date Range
     if (startDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
@@ -81,6 +79,7 @@ function ParcelHistory() {
       "Room Number": p.roomNumber,
       "Parcel Items": p.parcelName,
       "Received Date & Time": p.receivedAt?.toDate().toLocaleString('en-IN'),
+      "Created By (Entry)": p.createdBy || 'Public Form',
       "Handed Over By": p.receivedBy
     }));
 
@@ -90,14 +89,12 @@ function ParcelHistory() {
     XLSX.writeFile(workbook, `Parcel_History_${new Date().getTime()}.xlsx`);
   };
 
-  // ================= EXPORT TO PDF (PREMIUM) =================
-  // ================= EXPORT TO PDF (PREMIUM) =================
+  // ================= EXPORT TO PDF =================
   const exportToPDF = () => {
     if (filteredHistory.length === 0) return alert("No data to export!");
 
     const doc = new jsPDF('landscape');
     
-    // Header
     doc.setFontSize(22);
     doc.setTextColor(15, 23, 42);
     doc.text("SGVP Hostel - Parcel History Log", 14, 22);
@@ -106,8 +103,7 @@ function ParcelHistory() {
     doc.setTextColor(100, 116, 139);
     doc.text(`Generated on: ${new Date().toLocaleString('en-IN')} | Total Records: ${filteredHistory.length}`, 14, 30);
 
-    // Table Data
-    const tableColumn = ["Student Name", "PIN", "Room No", "Parcel Items", "Received Date & Time", "Handed Over By"];
+    const tableColumn = ["Student Name", "PIN", "Room No", "Parcel Items", "Received Date & Time", "Created By", "Handed Over By"];
     const tableRows = [];
 
     filteredHistory.forEach(p => {
@@ -117,18 +113,18 @@ function ParcelHistory() {
         p.roomNumber || 'N/A',
         p.parcelName,
         p.receivedAt?.toDate().toLocaleString('en-IN'),
+        p.createdBy || 'Public Form',
         p.receivedBy
       ];
       tableRows.push(rowData);
     });
 
-    // Auto Table Styling (YAHAN CHANGE KIYA HAI)
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 38,
       theme: 'grid',
-      styles: { fontSize: 10, cellPadding: 5 },
+      styles: { fontSize: 9, cellPadding: 4 },
       headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       margin: { top: 38 }
@@ -141,7 +137,6 @@ function ParcelHistory() {
     <div className="history-page-wrapper fade-in">
       <div className="history-main-card">
         
-        {/* HEADER SECTION */}
         <div className="history-header">
           <div className="header-titles">
             <div className="icon-box"><i className="fa-solid fa-clock-rotate-left"></i></div>
@@ -163,7 +158,6 @@ function ParcelHistory() {
           </div>
         </div>
 
-        {/* FILTERS SECTION */}
         <div className="history-filters">
           <div className="filter-group search-group">
             <svg className="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -200,7 +194,6 @@ function ParcelHistory() {
           </div>
         </div>
 
-        {/* TABLE SECTION */}
         {loading ? (
           <div className="history-loading">
             <div className="premium-spinner"></div>
@@ -214,6 +207,7 @@ function ParcelHistory() {
                   <th>Student Info</th>
                   <th>Parcel Items</th>
                   <th>Received Date & Time</th>
+                  <th>Created By</th>
                   <th>Handed By</th>
                 </tr>
               </thead>
@@ -243,6 +237,12 @@ function ParcelHistory() {
                       </span>
                     </td>
                     <td>
+                      <span className="staff-badge created-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        {p.createdBy || 'Public Form'}
+                      </span>
+                    </td>
+                    <td>
                       <span className="staff-badge">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         {p.receivedBy}
@@ -252,7 +252,7 @@ function ParcelHistory() {
                 ))}
                 {filteredHistory.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="history-empty">
+                    <td colSpan="5" className="history-empty">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                       <h3>No Records Found</h3>
                       <p>Try adjusting your search or date filters.</p>

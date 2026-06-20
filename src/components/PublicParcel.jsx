@@ -12,22 +12,27 @@ function PublicParcel() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // All Students Data (For fast search)
+  const [allStudents, setAllStudents] = useState([]);
+
   // Parcel & Search States
-  const [pinSearch, setPinSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [studentData, setStudentData] = useState(null);
   const [pendingParcels, setPendingParcels] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   
   // UI States
-  const [activeTab, setActiveTab] = useState('parcels'); // 'parcels' | 'create'
-  const [processingId, setProcessingId] = useState(null); // Fast inline loading
+  const [activeTab, setActiveTab] = useState('parcels');
+  const [processingId, setProcessingId] = useState(null);
 
-  // Parcel Form States (Sender details removed)
+  // Parcel Form States
   const [parcelType, setParcelType] = useState('Box');
   const [parcelName, setParcelName] = useState('');
-  const [remarks, setRemarks] = useState('');
+  const [imageFile, setImageFile] = useState(null); // Naya Image State
 
+  // Login Check
   useEffect(() => {
     const storedStaff = localStorage.getItem('hostel_staff');
     if (storedStaff) {
@@ -35,10 +40,24 @@ function PublicParcel() {
     }
   }, []);
 
-  // Auto-clear success messages after 3 seconds for professional feel
+  // Fetch all active students when staff logs in (For Instant Name/PIN Search)
   useEffect(() => {
-    if (msg.type === 'success' && msg.text) {
-      const timer = setTimeout(() => setMsg({ type: '', text: '' }), 3000);
+    if (staffUser) {
+      const fetchAllActive = async () => {
+        const q = query(collection(db, 'students'), where('status', '==', 'active'));
+        const snap = await getDocs(q);
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        setAllStudents(list);
+      };
+      fetchAllActive();
+    }
+  }, [staffUser]);
+
+  // Auto-clear messages
+  useEffect(() => {
+    if (msg.text) {
+      const timer = setTimeout(() => setMsg({ type: '', text: '' }), 4000);
       return () => clearTimeout(timer);
     }
   }, [msg]);
@@ -82,36 +101,48 @@ function PublicParcel() {
     localStorage.removeItem('hostel_staff');
     setStaffUser(null);
     setStudentData(null); 
+    setSearchResults([]);
   };
 
-  const handleSearchStudent = async (e) => {
+  // Smart Search logic
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
     setMsg({ type: '', text: '' });
     setStudentData(null);
-    setPendingParcels([]);
-    setActiveTab('parcels'); // Reset to parcels tab on new search
+    
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const term = searchQuery.toLowerCase().trim();
+    const results = allStudents.filter(s => 
+      s.name.toLowerCase().includes(term) || 
+      String(s.assignedPin || '').includes(term)
+    );
+
+    if (results.length === 0) {
+      setMsg({ type: 'error', text: 'No student found with this Name or PIN.' });
+    }
+    setSearchResults(results);
+  };
+
+  // When user clicks on a student from search results
+  const selectStudent = async (student) => {
+    setLoading(true);
+    setStudentData(student);
+    setSearchResults([]);
+    setActiveTab('parcels');
 
     try {
-      const q = query(collection(db, 'students'), where('assignedPin', '==', String(pinSearch)), where('status', '==', 'active'));
-      const snap = await getDocs(q);
-
-      if (snap.empty) {
-        setMsg({ type: 'error', text: 'Invalid PIN or Student is not active.' });
-      } else {
-        const docSnap = snap.docs[0];
-        const student = { id: docSnap.id, ...docSnap.data() };
-        setStudentData(student);
-
-        const parcelQ = query(collection(db, 'parcels'), where('pin', '==', student.assignedPin), where('status', '==', 'Expected'));
-        const parcelSnap = await getDocs(parcelQ);
-        const pList = [];
-        parcelSnap.forEach(d => pList.push({ id: d.id, ...d.data() }));
-        setPendingParcels(pList);
-      }
+      const parcelQ = query(collection(db, 'parcels'), where('pin', '==', student.assignedPin), where('status', '==', 'Expected'));
+      const parcelSnap = await getDocs(parcelQ);
+      const pList = [];
+      parcelSnap.forEach(d => pList.push({ id: d.id, ...d.data() }));
+      setPendingParcels(pList);
     } catch (err) {
       console.error(err);
-      setMsg({ type: 'error', text: 'Something went wrong. Try again.' });
+      setMsg({ type: 'error', text: 'Failed to load parcels.' });
     } finally {
       setLoading(false);
     }
@@ -121,6 +152,29 @@ function PublicParcel() {
     e.preventDefault();
     setLoading(true);
     try {
+      let uploadedImageUrl = '';
+
+      // IMGBB IMAGE UPLOAD LOGIC
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        
+        // YAHAN APNI IMGBB API KEY DAAL DENA
+        const IMGBB_API_KEY = "5c8a9e24ee14dfcf633871c8d058df40"; 
+        
+        const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const imgbbData = await imgbbRes.json();
+        if (imgbbData.success) {
+          uploadedImageUrl = imgbbData.data.url;
+        } else {
+          throw new Error('Image upload failed');
+        }
+      }
+
       const newParcelData = {
         studentId: studentData.id,
         studentName: studentData.name,
@@ -128,27 +182,26 @@ function PublicParcel() {
         roomNumber: studentData.roomNumber,
         parcelType,
         parcelName,
-        senderName: "Not Provided", // Backend email template ke liye default
+        senderName: "Not Provided", 
         mobileNumber: "N/A",
-        remarks,
+        imageUrl: uploadedImageUrl, // Remarks ki jagah URL save kiya
         status: 'Expected', 
         createdAt: new Date(),
         receivedAt: null,
         receivedBy: null,
-        entryBy: staffUser.username 
+        createdBy: staffUser.username 
       };
       
       const docRef = await addDoc(collection(db, 'parcels'), newParcelData);
       setPendingParcels([{ id: docRef.id, ...newParcelData }, ...pendingParcels]);
       
-      // Reset form & instantly show success and switch tab
-      setParcelName(''); setRemarks('');
-      setMsg({ type: 'success', text: 'Parcel successfully registered!' });
+      setParcelName(''); setImageFile(null);
+      setMsg({ type: 'success', text: 'Parcel with image successfully registered!' });
       setActiveTab('parcels');
       
     } catch (err) {
       console.error(err);
-      setMsg({ type: 'error', text: 'Failed to submit parcel.' });
+      setMsg({ type: 'error', text: 'Failed to submit parcel or upload image.' });
     } finally {
       setLoading(false);
     }
@@ -185,17 +238,14 @@ function PublicParcel() {
         hour: '2-digit', minute: '2-digit', hour12: true 
       });
 
-      // Update DB
       await updateDoc(doc(db, 'parcels', parcel.id), {
         status: 'Received',
         receivedAt: now,
         receivedBy: givenBy 
       });
 
-      // Fire and forget email (Background execution for speed)
       sendEmailNotification(parcel, formattedTime);
 
-      // Instant UI update
       setPendingParcels(prev => prev.filter(p => p.id !== parcel.id));
       setMsg({ type: 'success', text: `Parcel delivered successfully!` });
       
@@ -207,7 +257,6 @@ function PublicParcel() {
     }
   };
 
-  // ================= RENDER LOGIN SCREEN =================
   if (!staffUser) {
     return (
       <div className="elite-wrapper login-bg">
@@ -244,7 +293,6 @@ function PublicParcel() {
     );
   }
 
-  // ================= RENDER MAIN APP =================
   return (
     <div className="elite-wrapper app-bg">
       <div className="elite-glass-card main-app-card fade-in">
@@ -271,27 +319,56 @@ function PublicParcel() {
           </div>
         )}
 
-        <form onSubmit={handleSearchStudent} className="elite-search-form">
-          <div className="search-bar-wrapper">
-            <svg className="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input 
-              type="number" 
-              value={pinSearch} 
-              onChange={e => setPinSearch(e.target.value)} 
-              required 
-              placeholder="Enter Student PIN..." 
-              className="elite-search-input"
-            />
-            <button type="submit" disabled={loading} className="elite-search-btn">
-              {loading ? <span className="loader-small"></span> : 'Search'}
-            </button>
-          </div>
-        </form>
+        {/* --- SMART SEARCH FORM --- */}
+        {!studentData && (
+          <form onSubmit={handleSearchSubmit} className="elite-search-form fade-in">
+            <div className="search-bar-wrapper">
+              <svg className="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input 
+                type="text" 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                required 
+                placeholder="Search Student by Name or PIN..." 
+                className="elite-search-input"
+              />
+              <button type="submit" className="elite-search-btn">Search</button>
+            </div>
+          </form>
+        )}
 
+        {/* --- SEARCH RESULTS LIST --- */}
+        {searchResults.length > 0 && !studentData && (
+          <div className="search-results-container fade-in-up">
+            <h4 style={{ color: '#64748b', marginBottom: '10px', fontSize: '13px', textTransform: 'uppercase' }}>Select Student ({searchResults.length} found)</h4>
+            <div className="results-grid">
+              {searchResults.map(s => (
+                <div key={s.id} className="result-card" onClick={() => selectStudent(s)}>
+                  <div className="res-avatar">{s.name.charAt(0)}</div>
+                  <div className="res-info">
+                    <strong className="res-name">{s.name}</strong>
+                    <div className="res-badges">
+                      <span className="res-pin">PIN: {s.assignedPin || 'N/A'}</span>
+                      <span className="res-room">Room {s.roomNumber || 'N/A'}</span>
+                    </div>
+                  </div>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#94a3b8" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- STUDENT PROFILE & ACTIONS --- */}
         {studentData && (
           <div className="elite-data-section fade-in-up">
-            
-            <div className="elite-id-card" style={{marginTop: '20px', marginBottom: '20px'}}>
+            <div className="back-btn-wrapper">
+              <button onClick={() => setStudentData(null)} className="btn-back-search">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Back to Search
+              </button>
+            </div>
+
+            <div className="elite-id-card" style={{ marginBottom: '20px'}}>
               <div className="id-card-bg"></div>
               <div className="id-content">
                 <div className="id-avatar">{studentData.name.charAt(0)}</div>
@@ -305,37 +382,24 @@ function PublicParcel() {
               </div>
             </div>
 
-            {/* CUSTOM TABS / SLIDE BAR */}
-            <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '14px', padding: '6px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+            <div className="tabs-container">
               <button
                 type="button"
                 onClick={() => setActiveTab('parcels')}
-                style={{ 
-                  flex: 1, padding: '12px', border: 'none', borderRadius: '10px', fontSize: '14px',
-                  background: activeTab === 'parcels' ? '#fff' : 'transparent', 
-                  color: activeTab === 'parcels' ? '#0f172a' : '#64748b', 
-                  fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s ease',
-                  boxShadow: activeTab === 'parcels' ? '0 4px 10px rgba(0,0,0,0.05)' : 'none'
-                }}
+                className={`tab-btn ${activeTab === 'parcels' ? 'active' : ''}`}
               >
                 📦 Existing Parcels ({pendingParcels.length})
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('create')}
-                style={{ 
-                  flex: 1, padding: '12px', border: 'none', borderRadius: '10px', fontSize: '14px',
-                  background: activeTab === 'create' ? '#fff' : 'transparent', 
-                  color: activeTab === 'create' ? '#0f172a' : '#64748b', 
-                  fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s ease',
-                  boxShadow: activeTab === 'create' ? '0 4px 10px rgba(0,0,0,0.05)' : 'none'
-                }}
+                className={`tab-btn ${activeTab === 'create' ? 'active' : ''}`}
               >
                 ➕ Create Parcel
               </button>
             </div>
 
-            {/* TAB CONTENT: PENDING PARCELS */}
+            {/* TAB: EXISTING PARCELS */}
             {activeTab === 'parcels' && (
               <div className="elite-section fade-in">
                 {pendingParcels.length > 0 ? (
@@ -351,23 +415,35 @@ function PublicParcel() {
                         </div>
                         <div className="ticket-body">
                           <div className="info-row"><span>Type:</span> <strong>{p.parcelType}</strong></div>
-                          {p.remarks && <div className="info-row alert-row"><span>Note:</span> <strong>{p.remarks}</strong></div>}
                         </div>
-                        <button 
-                          onClick={() => handleMarkReceived(p)} 
-                          disabled={processingId === p.id}
-                          className="elite-btn-success"
-                          style={{ opacity: processingId === p.id ? 0.7 : 1 }}
-                        >
-                           {processingId === p.id ? (
-                             <span className="loader-small"></span>
-                           ) : (
-                             <>
-                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 
-                               Mark Received
-                             </>
-                           )}
-                        </button>
+                        
+                        <div className="ticket-actions">
+                          {p.imageUrl && (
+                            <button 
+                              onClick={() => window.open(p.imageUrl, '_blank')}
+                              className="btn-view-photo"
+                            >
+                              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                              View Photo
+                            </button>
+                          )}
+                          
+                          <button 
+                            onClick={() => handleMarkReceived(p)} 
+                            disabled={processingId === p.id}
+                            className="elite-btn-success"
+                            style={{ opacity: processingId === p.id ? 0.7 : 1 }}
+                          >
+                             {processingId === p.id ? (
+                               <span className="loader-small"></span>
+                             ) : (
+                               <>
+                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 
+                                 Mark Received
+                               </>
+                             )}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -380,7 +456,7 @@ function PublicParcel() {
               </div>
             )}
 
-            {/* TAB CONTENT: CREATE PARCEL */}
+            {/* TAB: CREATE PARCEL */}
             {activeTab === 'create' && (
               <form onSubmit={handleParcelSubmit} className="elite-form neumorphic-form fade-in">
                 <div className="elite-grid-2">
@@ -400,9 +476,22 @@ function PublicParcel() {
                   </div>
                 </div>
 
+                {/* IMAGE CAPTURE AREA */}
                 <div className="elite-input-group full-width">
-                  <label>Remarks / Special Instructions (Optional)</label>
-                  <input type="text" value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="e.g. Fragile, Urgent" />
+                  <label>Capture / Upload Image</label>
+                  <div className="image-upload-wrapper">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment" 
+                      onChange={e => setImageFile(e.target.files[0])} 
+                      className="file-input-magic"
+                    />
+                    <div className="upload-ui">
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                      <span>{imageFile ? imageFile.name : 'Tap to Open Camera or Select Photo'}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <button type="submit" disabled={loading} className="elite-btn-primary full-width">
@@ -413,7 +502,6 @@ function PublicParcel() {
 
           </div>
         )}
-
       </div>
     </div>
   );

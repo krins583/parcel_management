@@ -310,3 +310,6 @@
   .btn-export { flex: 1; justify-content: center; }
   .search-group { max-width: 100%; }
 }
+
+/* ParcelHistory.css ke sabse end mein add karein */
+.created-badge { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
