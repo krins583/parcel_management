@@ -1,6 +1,6 @@
 // src/components/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, where, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import './Dashboard.css';
@@ -14,9 +14,11 @@ function Dashboard() {
   });
   
   const [loading, setLoading] = useState(true);
-  const [isTVMode, setIsTVMode] = useState(false);
   const [pendingParcelsList, setPendingParcelsList] = useState([]);
-  const [collectionTime, setCollectionTime] = useState('');
+  
+  // Naya State for TV Time
+  const [collectionTime, setCollectionTime] = useState('Today 05:00 PM - 07:00 PM');
+  const [isUpdatingTime, setIsUpdatingTime] = useState(false);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -52,6 +54,7 @@ function Dashboard() {
     fetchStaticStats();
   }, []);
 
+  // Fetch Live Parcels
   useEffect(() => {
     const expectedParcelsQ = query(collection(db, 'parcels'), where('status', '==', 'Expected'));
     
@@ -65,14 +68,14 @@ function Dashboard() {
     return () => unsubscribe(); 
   }, []);
 
+  // Fetch Live Time Settings
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
-        setIsTVMode(false);
+    const unsubscribeTime = onSnapshot(doc(db, 'settings', 'tvConfig'), (docSnap) => {
+      if (docSnap.exists()) {
+        setCollectionTime(docSnap.data().collectionTime || 'Today 05:00 PM - 07:00 PM');
       }
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    });
+    return () => unsubscribeTime();
   }, []);
 
   const handleLogout = async () => {
@@ -88,25 +91,18 @@ function Dashboard() {
     }
   };
 
-  const openTVMode = () => {
-    const timeInput = prompt("Bachhon ko Parcel lene ka time batao (e.g., Today 5:00 PM to 6:00 PM):", "Today 05:00 PM - 07:00 PM");
-    
-    if (timeInput !== null) {
-      setCollectionTime(timeInput);
-      setIsTVMode(true);
-      
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      }
+  // Update TV Time in Database
+  const updateTVTime = async () => {
+    setIsUpdatingTime(true);
+    try {
+      await setDoc(doc(db, 'settings', 'tvConfig'), { collectionTime }, { merge: true });
+      alert("✅ TV Screen Time updated successfully!");
+    } catch (error) {
+      console.error("Error updating time:", error);
+      alert("Failed to update time.");
+    } finally {
+      setIsUpdatingTime(false);
     }
-  };
-
-  const closeTVMode = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
-    setIsTVMode(false);
   };
 
   // Modern Stat Card Component
@@ -123,66 +119,6 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       
-      {/* ---------- 📺 TRUE FULL SCREEN TV MODE (Unchanged logic) 📺 ---------- */}
-      {isTVMode && (
-        <div className="tv-mode-overlay fade-in">
-          <div className="tv-header">
-            <div>
-              <h1>📦 PENDING PARCELS LIST</h1>
-              <h2 className="tv-collection-time">🕒 COLLECTION TIME: {collectionTime}</h2>
-            </div>
-            <div className="tv-time-close">
-              <span className="live-badge"><div className="pulse-dot-red"></div> LIVE FEED</span>
-              <button onClick={closeTVMode} className="close-tv-btn">✕ Exit TV Mode</button>
-            </div>
-          </div>
-          
-          <div className="tv-content">
-            {pendingParcelsList.length > 0 ? (
-              <div className="tv-data-container">
-                <table className="tv-table tv-header-fixed">
-                  <thead>
-                    <tr>
-                      <th width="45%">STUDENT NAME</th>
-                      <th width="25%" className="text-center">ROOM NO.</th>
-                      <th width="30%" className="text-center">PIN NUMBER</th>
-                    </tr>
-                  </thead>
-                </table>
-                <div className="tv-scroll-viewport">
-                  <div className={`tv-scroll-content ${pendingParcelsList.length > 3 ? 'tv-scroll-active' : ''}`}>
-                    <table className="tv-table">
-                      <tbody>
-                        {pendingParcelsList.map((parcel, index) => (
-                          <tr key={`first-${index}`} className="tv-row">
-                            <td width="45%" className="tv-name">{parcel.studentName}</td>
-                            <td width="25%" className="text-center tv-room">{parcel.roomNumber}</td>
-                            <td width="30%" className="text-center tv-pin">{parcel.pin}</td>
-                          </tr>
-                        ))}
-                        {pendingParcelsList.length > 3 && pendingParcelsList.map((parcel, index) => (
-                          <tr key={`second-${index}`} className="tv-row">
-                            <td width="45%" className="tv-name">{parcel.studentName}</td>
-                            <td width="25%" className="text-center tv-room">{parcel.roomNumber}</td>
-                            <td width="30%" className="text-center tv-pin">{parcel.pin}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="tv-empty">
-                <h2>No Pending Parcels Right Now.</h2>
-                <p>All clear!</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      {/* ---------------------------------------------------------------------- */}
-
       {/* DASHBOARD HEADER */}
       <div className="dash-header fade-in">
         <div>
@@ -272,11 +208,28 @@ function Dashboard() {
             <div className="dash-right-col">
               
               <div className="dash-card highlight-card">
-                <h2>Quick Actions</h2>
+                <h2>Public TV Display Setup</h2>
+                
+                <div style={{marginBottom: '15px'}}>
+                  <label style={{display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', marginBottom: '8px'}}>Collection Time (Shows on TV):</label>
+                  <div style={{display: 'flex', gap: '10px'}}>
+                    <input 
+                      type="text" 
+                      value={collectionTime}
+                      onChange={(e) => setCollectionTime(e.target.value)}
+                      style={{flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', fontFamily: 'inherit'}}
+                    />
+                    <button onClick={updateTVTime} disabled={isUpdatingTime} style={{padding: '10px 15px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}}>
+                      {isUpdatingTime ? 'Saving...' : 'Update'}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="action-buttons">
-                  <button onClick={openTVMode} className="btn-primary-action">
+                  {/* Ye button ab naye tab mein Public TV link kholega */}
+                  <button onClick={() => window.open('/tv', '_blank')} className="btn-primary-action">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
-                    Launch TV Display
+                    Open Public TV Link
                   </button>
                   <button onClick={() => window.location.href='/manage-parcels'} className="btn-secondary-action">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
@@ -299,9 +252,6 @@ function Dashboard() {
                   <div className="status-row">
                     <span className="status-label">Missing PINs</span>
                     <span className="status-val text-red">{stats.pendingPins}</span>
-                  </div>
-                  <div className="status-footer">
-                    Last synced: {new Date().toLocaleTimeString('en-IN')}
                   </div>
                 </div>
               </div>

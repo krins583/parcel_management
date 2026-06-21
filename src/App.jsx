@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
+import TVScreen from './components/TVScreen';
 
 // Components (Lazy Loaded for Optimization)
 const Navigation = lazy(() => import('./components/Navigation'));
@@ -16,6 +17,7 @@ const ManageParcels = lazy(() => import('./components/ManageParcels'));
 const ParcelHistory = lazy(() => import('./components/ParcelHistory'));
 const CreateUser = lazy(() => import('./components/CreateUser'));
 const ManageUsers = lazy(() => import('./components/ManageUsers'));
+
 
 // Student Components
 const StudentNavigation = lazy(() => import('./components/StudentNavigation'));
@@ -105,6 +107,8 @@ function App() {
       <Suspense fallback={<div>Loading App...</div>}>
         <Routes>
           <Route path="/public-parcel" element={<PublicParcel />} />
+              <Route path="/tv" element={<TVScreen />} />
+
           <Route path="/*" element={<AuthWrapper />} />
         </Routes>
       </Suspense>
