@@ -513,32 +513,35 @@ function PublicParcel() {
                     
                     {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
                     {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
+                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY (ULTIMATE FIX) */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         
                         {/* CAMERA BUTTON */}
-                        <label className="upload-btn-split">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            capture="environment" 
-                            onChange={e => setImageFile(e.target.files[0])} 
-                            className="hidden-file-input" /* 🚀 YE CHANGE KIYA */
-                          />
+                        <label htmlFor="camera-upload" className="upload-btn-split">
                           📸 Camera
                         </label>
+                        <input 
+                          id="camera-upload"
+                          type="file" 
+                          accept="image/*" 
+                          capture="environment" 
+                          onChange={e => setImageFile(e.target.files[0])} 
+                          className="hidden-file-safe"
+                        />
 
                         {/* GALLERY BUTTON */}
-                        <label className="upload-btn-split">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={e => setImageFile(e.target.files[0])} 
-                            className="hidden-file-input" /* 🚀 YE CHANGE KIYA */
-                          />
+                        <label htmlFor="gallery-upload" className="upload-btn-split">
                           🖼️ Gallery
                         </label>
+                        <input 
+                          id="gallery-upload"
+                          type="file" 
+                          accept="image/*" 
+                          onChange={e => setImageFile(e.target.files[0])} 
+                          className="hidden-file-safe"
+                        />
                         
                       </div>
                       
