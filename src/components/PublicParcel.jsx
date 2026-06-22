@@ -512,6 +512,7 @@ function PublicParcel() {
                     </div>
                     
                     {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
+                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
@@ -523,7 +524,7 @@ function PublicParcel() {
                             accept="image/*" 
                             capture="environment" 
                             onChange={e => setImageFile(e.target.files[0])} 
-                            style={{ display: 'none' }}
+                            className="hidden-file-input" /* 🚀 YE CHANGE KIYA */
                           />
                           📸 Camera
                         </label>
@@ -534,7 +535,7 @@ function PublicParcel() {
                             type="file" 
                             accept="image/*" 
                             onChange={e => setImageFile(e.target.files[0])} 
-                            style={{ display: 'none' }}
+                            className="hidden-file-input" /* 🚀 YE CHANGE KIYA */
                           />
                           🖼️ Gallery
                         </label>
