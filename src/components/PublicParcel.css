@@ -44,7 +44,11 @@
 /* --- Image Upload Magic --- */
 .image-upload-wrapper { position: relative; width: 100%; height: 60px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; overflow: hidden; transition: all 0.3s; }
 .image-upload-wrapper:hover { border-color: #6366f1; background: #e0e7ff; }
-.file-input-magic { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+.file-input-magic {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.02; /* MAGIC FIX: Android WebView ke liye thoda sa visible rakhna zaroori hai */
+  cursor: pointer; z-index: 999; /* Z-index badha diya taaki hamesha upar rahe */
+}
 .upload-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; color: #64748b; font-weight: 600; font-size: 14px; pointer-events: none; }
 .image-upload-wrapper:hover .upload-ui { color: #4f46e5; }
 

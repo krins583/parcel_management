@@ -513,7 +513,12 @@ function PublicParcel() {
                     <div className="elite-input-group full-width">
                       <label>Capture / Upload Image</label>
                       <div className="image-upload-wrapper">
-                        <input type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files[0])} className="file-input-magic"/>
+                       <input 
+  type="file" 
+  accept="image/*" 
+  onChange={e => setImageFile(e.target.files[0])} 
+  className="file-input-magic"
+/>
                         <div className="upload-ui">
                           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                           <span>{imageFile ? imageFile.name : 'Tap to Open Camera or Select Photo'}</span>
