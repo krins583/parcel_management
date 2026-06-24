@@ -523,35 +523,39 @@ function PublicParcel() {
                       </div>
                     </div>
                     
+                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         
+                        {/* CAMERA BUTTON */}
                         <label htmlFor="camera-upload" className="upload-btn-split">
                           📸 Camera
                         </label>
                         <input 
                           id="camera-upload"
                           type="file" 
-                          accept="image/jpeg, image/png, image/jpg" /* 🚀 WebView specific fix */
-                          capture="environment" 
+                          accept="image/*"     /* 🚀 FIX: Isko wapas image/* kar diya */
+                          capture="camera"     /* 🚀 FIX: environment ki jagah sirf camera */
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
 
+                        {/* GALLERY BUTTON */}
                         <label htmlFor="gallery-upload" className="upload-btn-split">
                           🖼️ Gallery
                         </label>
                         <input 
                           id="gallery-upload"
                           type="file" 
-                          accept="image/jpeg, image/png, image/jpg" 
+                          accept="image/*"     /* 🚀 FIX: Isko wapas image/* kar diya */
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
                         
                       </div>
                       
+                      {/* FILE SELECTED CONFIRMATION */}
                       {imageFile && (
                         <div className="selected-file-badge fade-in">
                           ✅ Selected: {imageFile.name}
