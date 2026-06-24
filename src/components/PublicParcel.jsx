@@ -13,10 +13,10 @@ function PublicParcel() {
   const [loginError, setLoginError] = useState('');
 
   // App Modes & Data
-  const [mainMode, setMainMode] = useState('search_create'); // 'search_create' | 'all_pending'
+  const [mainMode, setMainMode] = useState('search_create'); 
   const [allStudents, setAllStudents] = useState([]);
-  const [allPendingParcels, setAllPendingParcels] = useState([]); // For All Pending tab
-  const [pendingSearchPin, setPendingSearchPin] = useState(''); // Search for All Pending
+  const [allPendingParcels, setAllPendingParcels] = useState([]); 
+  const [pendingSearchPin, setPendingSearchPin] = useState(''); 
 
   // Individual Search & Create States
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,7 +29,7 @@ function PublicParcel() {
   // UI States
   const [activeTab, setActiveTab] = useState('parcels');
   const [processingId, setProcessingId] = useState(null);
-  const [viewImageUrl, setViewImageUrl] = useState(null); // IN-APP IMAGE VIEWER STATE
+  const [viewImageUrl, setViewImageUrl] = useState(null); 
 
   // Parcel Form States
   const [parcelType, setParcelType] = useState('Box');
@@ -43,7 +43,6 @@ function PublicParcel() {
     }
   }, []);
 
-  // Fetch all active students when staff logs in
   useEffect(() => {
     if (staffUser) {
       const fetchAllActive = async () => {
@@ -57,7 +56,6 @@ function PublicParcel() {
     }
   }, [staffUser]);
 
-  // Fetch All Pending Parcels for the new Tab
   const fetchAllPendingParcels = async () => {
     setLoading(true);
     try {
@@ -80,7 +78,6 @@ function PublicParcel() {
     }
   }, [mainMode]);
 
-  // Auto-clear messages
   useEffect(() => {
     if (msg.text) {
       const timer = setTimeout(() => setMsg({ type: '', text: '' }), 4000);
@@ -129,7 +126,6 @@ function PublicParcel() {
     setSearchResults([]);
   };
 
-  // SMART SEARCH LOGIC (For Specific Student)
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setMsg({ type: '', text: '' });
@@ -172,15 +168,42 @@ function PublicParcel() {
     }
   };
 
-  // CREATE PARCEL LOGIC
+  // 🚀 CREATE PARCEL LOGIC WITH AUTO-COMPRESSION
   const handleParcelSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       let uploadedImageUrl = '';
+      
       if (imageFile) {
+        // --- 🪄 MAGIC COMPRESSION START ---
+        // Ye code 15MB photo ko automatically 200KB bana dega upload se pehle
+        const compressedFile = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(imageFile);
+          reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 800; // Resize width to make it super fast
+              const scaleSize = MAX_WIDTH / img.width;
+              canvas.width = MAX_WIDTH;
+              canvas.height = img.height * scaleSize;
+              
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              
+              canvas.toBlob((blob) => {
+                resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
+              }, 'image/jpeg', 0.7); // 70% quality for optimization
+            };
+          };
+        });
+        // --- 🪄 MAGIC COMPRESSION END ---
+
         const formData = new FormData();
-        formData.append('image', imageFile);
+        formData.append('image', compressedFile); // Sending optimized file to ImgBB
         const IMGBB_API_KEY = "5c8a9e24ee14dfcf633871c8d058df40"; 
         
         const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
@@ -248,7 +271,6 @@ function PublicParcel() {
     }
   };
 
-  // MARK RECEIVED LOGIC (Works for both views)
   const handleMarkReceived = async (parcel) => {
     setProcessingId(parcel.id);
     const givenBy = staffUser.username; 
@@ -268,7 +290,6 @@ function PublicParcel() {
 
       sendEmailNotification(parcel, formattedTime);
 
-      // Update both lists so UI stays synced
       setPendingParcels(prev => prev.filter(p => p.id !== parcel.id));
       setAllPendingParcels(prev => prev.filter(p => p.id !== parcel.id));
       
@@ -281,14 +302,11 @@ function PublicParcel() {
     }
   };
 
-  // Filter All Pending Parcels by PIN
   const filteredAllPending = allPendingParcels.filter(p => 
     String(p.pin).includes(pendingSearchPin.trim()) || 
     p.studentName.toLowerCase().includes(pendingSearchPin.toLowerCase())
   );
 
-
-  // --- LOGIN SCREEN ---
   if (!staffUser) {
     return (
       <div className="elite-wrapper login-bg">
@@ -327,7 +345,6 @@ function PublicParcel() {
 
   return (
     <div className="elite-wrapper app-bg">
-      {/* IN-APP IMAGE MODAL */}
       {viewImageUrl && (
         <div className="image-modal-overlay fade-in" onClick={() => setViewImageUrl(null)}>
           <div className="image-modal-content" onClick={e => e.stopPropagation()}>
@@ -342,7 +359,6 @@ function PublicParcel() {
 
       <div className="elite-glass-card main-app-card fade-in">
         
-        {/* TOP NAV */}
         <div className="elite-top-nav">
           <div className="nav-profile">
             <div className="nav-avatar" style={{ background: 'transparent', padding: '0' }}>
@@ -359,7 +375,6 @@ function PublicParcel() {
           </button>
         </div>
 
-        {/* MAIN MODE TOGGLE */}
         <div className="main-mode-toggle fade-in">
           <button 
             className={mainMode === 'search_create' ? 'active' : ''} 
@@ -381,9 +396,6 @@ function PublicParcel() {
           </div>
         )}
 
-        {/* =========================================
-            MODE 1: SEARCH & CREATE SPECIFIC STUDENT 
-            ========================================= */}
         {mainMode === 'search_create' && (
           <div className="fade-in-up">
             {!studentData && (
@@ -511,41 +523,35 @@ function PublicParcel() {
                       </div>
                     </div>
                     
-                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
-                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
-                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY (ULTIMATE FIX) */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         
-                        {/* CAMERA BUTTON */}
                         <label htmlFor="camera-upload" className="upload-btn-split">
                           📸 Camera
                         </label>
                         <input 
                           id="camera-upload"
                           type="file" 
-                          accept="image/*" 
+                          accept="image/jpeg, image/png, image/jpg" /* 🚀 WebView specific fix */
                           capture="environment" 
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
 
-                        {/* GALLERY BUTTON */}
                         <label htmlFor="gallery-upload" className="upload-btn-split">
                           🖼️ Gallery
                         </label>
                         <input 
                           id="gallery-upload"
                           type="file" 
-                          accept="image/*" 
+                          accept="image/jpeg, image/png, image/jpg" 
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
                         
                       </div>
                       
-                      {/* FILE SELECTED CONFIRMATION */}
                       {imageFile && (
                         <div className="selected-file-badge fade-in">
                           ✅ Selected: {imageFile.name}
@@ -563,9 +569,6 @@ function PublicParcel() {
           </div>
         )}
 
-        {/* =========================================
-            MODE 2: ALL PENDING PARCELS (COMPACT DESIGN) 
-            ========================================= */}
         {mainMode === 'all_pending' && (
           <div className="fade-in-up">
             <div className="search-bar-wrapper" style={{ marginBottom: '15px' }}>
@@ -584,11 +587,10 @@ function PublicParcel() {
             ) : (
               <div className="elite-section">
                 {filteredAllPending.length > 0 ? (
-                  <div className="elite-parcel-grid" style={{ gap: '10px' }}> {/* Reduced Gap */}
+                  <div className="elite-parcel-grid" style={{ gap: '10px' }}> 
                     {filteredAllPending.map(p => (
-                      <div key={p.id} className="elite-ticket-card" style={{ padding: '12px' }}> {/* Compact Padding */}
+                      <div key={p.id} className="elite-ticket-card" style={{ padding: '12px' }}> 
                         
-                        {/* Student Info Highlight */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
                           <div className="res-avatar" style={{ width: '30px', height: '30px', fontSize: '13px', borderRadius: '8px' }}>{p.studentName.charAt(0)}</div>
                           <div style={{ flex: 1 }}>
@@ -597,7 +599,6 @@ function PublicParcel() {
                           </div>
                         </div>
 
-                        {/* Parcel Info */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                           <div className="ticket-header" style={{ margin: 0, alignItems: 'center' }}>
                             <div className="ticket-icon" style={{ width: '26px', height: '26px', fontSize: '12px', borderRadius: '6px' }}>📦</div>
@@ -608,7 +609,6 @@ function PublicParcel() {
                           </div>
                         </div>
                         
-                        {/* Compact Action Buttons (Side by Side) */}
                         <div className="ticket-actions" style={{ display: 'flex', gap: '8px' }}>
                           {p.imageUrl && (
                             <button onClick={() => setViewImageUrl(p.imageUrl)} className="btn-view-photo" style={{ margin: 0, flex: 1, padding: '8px', fontSize: '12px', height: '34px' }}>
