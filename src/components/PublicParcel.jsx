@@ -168,7 +168,6 @@ function PublicParcel() {
     }
   };
 
-  // 🚀 CREATE PARCEL LOGIC WITH AUTO-COMPRESSION
   const handleParcelSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -176,8 +175,6 @@ function PublicParcel() {
       let uploadedImageUrl = '';
       
       if (imageFile) {
-        // --- 🪄 MAGIC COMPRESSION START ---
-        // Ye code 15MB photo ko automatically 200KB bana dega upload se pehle
         const compressedFile = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.readAsDataURL(imageFile);
@@ -186,7 +183,7 @@ function PublicParcel() {
             img.src = event.target.result;
             img.onload = () => {
               const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 800; // Resize width to make it super fast
+              const MAX_WIDTH = 800; 
               const scaleSize = MAX_WIDTH / img.width;
               canvas.width = MAX_WIDTH;
               canvas.height = img.height * scaleSize;
@@ -196,14 +193,13 @@ function PublicParcel() {
               
               canvas.toBlob((blob) => {
                 resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
-              }, 'image/jpeg', 0.7); // 70% quality for optimization
+              }, 'image/jpeg', 0.7); 
             };
           };
         });
-        // --- 🪄 MAGIC COMPRESSION END ---
 
         const formData = new FormData();
-        formData.append('image', compressedFile); // Sending optimized file to ImgBB
+        formData.append('image', compressedFile); 
         const IMGBB_API_KEY = "5c8a9e24ee14dfcf633871c8d058df40"; 
         
         const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
@@ -224,6 +220,7 @@ function PublicParcel() {
         studentName: studentData.name,
         pin: studentData.assignedPin,
         roomNumber: studentData.roomNumber,
+        studentEmail: studentData.email || "", // 🚀 FIX 1: Naya parcel banate waqt email save kar rahe hain
         parcelType,
         parcelName,
         senderName: "Not Provided", 
@@ -252,13 +249,23 @@ function PublicParcel() {
   };
 
   const sendEmailNotification = async (parcel, receiveTime) => {
-    const studentEmail = studentData?.email || parcel.studentEmail || "testemail@gmail.com";
+    // 🚀 FIX 2: Agar purana parcel hai jisme email nahi hai, toh allStudents list mein se uska email nikal lenge
+    const foundStudent = allStudents.find(s => s.id === parcel.studentId || s.assignedPin === parcel.pin);
+    
+    // Yahan pehle specific search data, fir parcel ka apna data, fir background list ka data check hoga
+    const finalEmail = studentData?.email || parcel.studentEmail || foundStudent?.email;
+
+    if (!finalEmail) {
+      console.error("Student email not found. Cannot send email.");
+      return; // Agar email mila hi nahi toh test email par bhejne ki bajay cancel kar denge
+    }
+
     try {
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          toEmail: studentEmail,
+          toEmail: finalEmail,
           studentName: parcel.studentName,
           parcelName: parcel.parcelName,
           senderName: parcel.senderName,
@@ -523,39 +530,35 @@ function PublicParcel() {
                       </div>
                     </div>
                     
-                    {/* NEW SPLIT BUTTONS FOR CAMERA & GALLERY */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         
-                        {/* CAMERA BUTTON */}
                         <label htmlFor="camera-upload" className="upload-btn-split">
                           📸 Camera
                         </label>
                         <input 
                           id="camera-upload"
                           type="file" 
-                          accept="image/*"     /* 🚀 FIX: Isko wapas image/* kar diya */
-                          capture="camera"     /* 🚀 FIX: environment ki jagah sirf camera */
+                          accept="image/*" 
+                          capture="camera" 
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
 
-                        {/* GALLERY BUTTON */}
                         <label htmlFor="gallery-upload" className="upload-btn-split">
                           🖼️ Gallery
                         </label>
                         <input 
                           id="gallery-upload"
                           type="file" 
-                          accept="image/*"     /* 🚀 FIX: Isko wapas image/* kar diya */
+                          accept="image/*" 
                           onChange={e => setImageFile(e.target.files[0])} 
                           className="hidden-file-safe"
                         />
                         
                       </div>
                       
-                      {/* FILE SELECTED CONFIRMATION */}
                       {imageFile && (
                         <div className="selected-file-badge fade-in">
                           ✅ Selected: {imageFile.name}
