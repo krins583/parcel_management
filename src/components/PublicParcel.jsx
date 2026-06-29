@@ -5,20 +5,17 @@ import { db } from '../firebase';
 import './PublicParcel.css';
 
 function PublicParcel() {
-  // Staff Auth States
   const [staffUser, setStaffUser] = useState(null);
   const [loginMobileNumber, setLoginMobileNumber] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // App Modes & Data
   const [mainMode, setMainMode] = useState('search_create'); 
   const [allStudents, setAllStudents] = useState([]);
   const [allPendingParcels, setAllPendingParcels] = useState([]); 
   const [pendingSearchPin, setPendingSearchPin] = useState(''); 
 
-  // Individual Search & Create States
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [studentData, setStudentData] = useState(null);
@@ -26,12 +23,10 @@ function PublicParcel() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
   
-  // UI States
   const [activeTab, setActiveTab] = useState('parcels');
   const [processingId, setProcessingId] = useState(null);
   const [viewImageUrl, setViewImageUrl] = useState(null); 
 
-  // Parcel Form States
   const [parcelType, setParcelType] = useState('Box');
   const [parcelName, setParcelName] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -85,7 +80,6 @@ function PublicParcel() {
     }
   }, [msg]);
 
-  // LOGIN LOGIC
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginLoading(true);
@@ -220,7 +214,7 @@ function PublicParcel() {
         studentName: studentData.name,
         pin: studentData.assignedPin,
         roomNumber: studentData.roomNumber,
-        studentEmail: studentData.email || "", // 🚀 FIX 1: Naya parcel banate waqt email save kar rahe hain
+        studentEmail: studentData.email || "", 
         parcelType,
         parcelName,
         senderName: "Not Provided", 
@@ -249,15 +243,12 @@ function PublicParcel() {
   };
 
   const sendEmailNotification = async (parcel, receiveTime) => {
-    // 🚀 FIX 2: Agar purana parcel hai jisme email nahi hai, toh allStudents list mein se uska email nikal lenge
     const foundStudent = allStudents.find(s => s.id === parcel.studentId || s.assignedPin === parcel.pin);
-    
-    // Yahan pehle specific search data, fir parcel ka apna data, fir background list ka data check hoga
     const finalEmail = studentData?.email || parcel.studentEmail || foundStudent?.email;
 
     if (!finalEmail) {
       console.error("Student email not found. Cannot send email.");
-      return; // Agar email mila hi nahi toh test email par bhejne ki bajay cancel kar denge
+      return; 
     }
 
     try {
@@ -313,6 +304,34 @@ function PublicParcel() {
     String(p.pin).includes(pendingSearchPin.trim()) || 
     p.studentName.toLowerCase().includes(pendingSearchPin.toLowerCase())
   );
+
+  // 🚀 JAVASCRIPT BRIDGE FUNCTION: Direct Flutter native app se communicate karega
+  const handleNativeUpload = async (source) => {
+    if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+      try {
+        setMsg({ type: 'success', text: 'Opening native ' + source + '...' });
+        const base64Image = await window.flutter_inappwebview.callHandler('pickImage', source);
+        if (base64Image) {
+           const fetchRes = await fetch(`data:image/jpeg;base64,${base64Image}`);
+           const blob = await fetchRes.blob();
+           const file = new File([blob], `flutter_${source}.jpg`, { type: 'image/jpeg' });
+           setImageFile(file);
+           setMsg({ type: 'success', text: 'Photo attached from app!' });
+        } else {
+           setMsg({ type: 'error', text: 'Action cancelled.' });
+        }
+      } catch (err) {
+        console.error("Flutter handler error:", err);
+      }
+    } else {
+      // Chrome/Safari Fallback: Agar normal browser mein open kiya toh file input chalega
+      if (source === 'camera') {
+        document.getElementById('camera-upload').click();
+      } else {
+        document.getElementById('gallery-upload').click();
+      }
+    }
+  };
 
   if (!staffUser) {
     return (
@@ -534,28 +553,16 @@ function PublicParcel() {
                       <label>Attach Parcel Photo</label>
                       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         
-                        <label htmlFor="camera-upload" className="upload-btn-split">
+                        {/* 🚀 BUTTONS JO DIRECT FLUTTER CAMERA KO SIGNAL BHEJENGE */}
+                        <button type="button" onClick={() => handleNativeUpload('camera')} className="upload-btn-split">
                           📸 Camera
-                        </label>
-                        <input 
-                          id="camera-upload"
-                          type="file" 
-                          accept="image/*" 
-                          capture="camera" 
-                          onChange={e => setImageFile(e.target.files[0])} 
-                          className="hidden-file-safe"
-                        />
+                        </button>
+                        <input id="camera-upload" type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files[0])} className="hidden-file-safe" />
 
-                        <label htmlFor="gallery-upload" className="upload-btn-split">
+                        <button type="button" onClick={() => handleNativeUpload('gallery')} className="upload-btn-split">
                           🖼️ Gallery
-                        </label>
-                        <input 
-                          id="gallery-upload"
-                          type="file" 
-                          accept="image/*" 
-                          onChange={e => setImageFile(e.target.files[0])} 
-                          className="hidden-file-safe"
-                        />
+                        </button>
+                        <input id="gallery-upload" type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} className="hidden-file-safe" />
                         
                       </div>
                       
