@@ -530,23 +530,35 @@ function PublicParcel() {
                       </div>
                     </div>
                     
-                    {/* 🚀 UNIVERSAL UPLOAD BUTTON (FIXES WEBVIEW CAMERA BUG) */}
                     <div className="elite-input-group full-width">
                       <label>Attach Parcel Photo</label>
+                      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                        
+                        <label htmlFor="camera-upload" className="upload-btn-split">
+                          📸 Camera
+                        </label>
+                        <input 
+                          id="camera-upload"
+                          type="file" 
+                          accept="image/*" 
+                          capture="camera" 
+                          onChange={e => setImageFile(e.target.files[0])} 
+                          className="hidden-file-safe"
+                        />
+
+                        <label htmlFor="gallery-upload" className="upload-btn-split">
+                          🖼️ Gallery
+                        </label>
+                        <input 
+                          id="gallery-upload"
+                          type="file" 
+                          accept="image/*" 
+                          onChange={e => setImageFile(e.target.files[0])} 
+                          className="hidden-file-safe"
+                        />
+                        
+                      </div>
                       
-                      <label htmlFor="universal-upload" className="upload-btn-split" style={{ padding: '16px', fontSize: '15px', marginBottom: '10px' }}>
-                        📸 Click Photo / 🖼️ Select from Gallery
-                      </label>
-                      <input 
-                        id="universal-upload"
-                        type="file" 
-                        accept="image/*" 
-                        /* 🚀 MAGIC FIX: Yahan se 'capture="camera"' HATA DIYA HAI taaki Android khud handle kare */
-                        onChange={e => setImageFile(e.target.files[0])} 
-                        className="hidden-file-safe"
-                      />
-                      
-                      {/* FILE SELECTED CONFIRMATION */}
                       {imageFile && (
                         <div className="selected-file-badge fade-in">
                           ✅ Selected: {imageFile.name}
