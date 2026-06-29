@@ -11,6 +11,9 @@ function ParcelHistory() {
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // 🚀 Naya State: Image Modal ke liye
+  const [viewImageUrl, setViewImageUrl] = useState(null);
 
   // Filters State
   const [searchPin, setSearchPin] = useState('');
@@ -78,9 +81,11 @@ function ParcelHistory() {
       "PIN": p.pin,
       "Room Number": p.roomNumber,
       "Parcel Items": p.parcelName,
+      "Created Date & Time": p.createdAt ? p.createdAt.toDate().toLocaleString('en-IN') : 'N/A', // 🚀 NAYA COLUMN
       "Received Date & Time": p.receivedAt?.toDate().toLocaleString('en-IN'),
       "Created By (Entry)": p.createdBy || 'Public Form',
-      "Handed Over By": p.receivedBy
+      "Handed Over By": p.receivedBy,
+      "Image Link": p.imageUrl || 'No Image' // 🚀 NAYA COLUMN
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -103,7 +108,8 @@ function ParcelHistory() {
     doc.setTextColor(100, 116, 139);
     doc.text(`Generated on: ${new Date().toLocaleString('en-IN')} | Total Records: ${filteredHistory.length}`, 14, 30);
 
-    const tableColumn = ["Student Name", "PIN", "Room No", "Parcel Items", "Received Date & Time", "Created By", "Handed Over By"];
+    // 🚀 PDF Columns thode short rakhe hain taaki 9 columns fit ho jayein
+    const tableColumn = ["Name", "PIN", "Room", "Items", "Created Time", "Received Time", "Added By", "Given By", "Image"];
     const tableRows = [];
 
     filteredHistory.forEach(p => {
@@ -112,9 +118,11 @@ function ParcelHistory() {
         p.pin,
         p.roomNumber || 'N/A',
         p.parcelName,
+        p.createdAt ? p.createdAt.toDate().toLocaleString('en-IN') : 'N/A', // 🚀 NAYA COLUMN
         p.receivedAt?.toDate().toLocaleString('en-IN'),
         p.createdBy || 'Public Form',
-        p.receivedBy
+        p.receivedBy,
+        p.imageUrl ? 'Attached' : 'No Image' // 🚀 NAYA COLUMN (URL lamba hota hai isliye Attached likha hai)
       ];
       tableRows.push(rowData);
     });
@@ -124,7 +132,7 @@ function ParcelHistory() {
       body: tableRows,
       startY: 38,
       theme: 'grid',
-      styles: { fontSize: 9, cellPadding: 4 },
+      styles: { fontSize: 8, cellPadding: 3 }, // Text thoda chhota kiya taaki fit ho
       headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       margin: { top: 38 }
@@ -135,6 +143,20 @@ function ParcelHistory() {
 
   return (
     <div className="history-page-wrapper fade-in">
+      
+      {/* 🚀 IMAGE VIEWER MODAL */}
+      {viewImageUrl && (
+        <div className="history-image-modal-overlay fade-in" onClick={() => setViewImageUrl(null)}>
+          <div className="history-image-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="history-close-modal-btn" onClick={() => setViewImageUrl(null)}>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> 
+              Close Photo
+            </button>
+            <img src={viewImageUrl} alt="Parcel Proof" className="history-modal-img" />
+          </div>
+        </div>
+      )}
+
       <div className="history-main-card">
         
         <div className="history-header">
@@ -206,9 +228,11 @@ function ParcelHistory() {
                 <tr>
                   <th>Student Info</th>
                   <th>Parcel Items</th>
+                  <th>Created Date & Time</th> {/* 🚀 NAYA HEADER */}
                   <th>Received Date & Time</th>
                   <th>Created By</th>
                   <th>Handed By</th>
+                  <th>Image</th> {/* 🚀 NAYA HEADER */}
                 </tr>
               </thead>
               <tbody>
@@ -230,6 +254,15 @@ function ParcelHistory() {
                       <strong className="p-item">{p.parcelName}</strong>
                       {p.remarks && <p className="p-remark">Note: {p.remarks}</p>}
                     </td>
+
+                    {/* 🚀 NAYA COLUMN: CREATED AT */}
+                    <td>
+                      <span className="date-cell">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        {p.createdAt ? p.createdAt.toDate().toLocaleString('en-IN', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true}) : 'N/A'}
+                      </span>
+                    </td>
+
                     <td>
                       <span className="date-cell">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -248,11 +281,23 @@ function ParcelHistory() {
                         {p.receivedBy}
                       </span>
                     </td>
+
+                    {/* 🚀 NAYA COLUMN: IMAGE VIEWER */}
+                    <td>
+                      {p.imageUrl ? (
+                        <button onClick={() => setViewImageUrl(p.imageUrl)} className="btn-view-image-history">
+                          📸 View
+                        </button>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>No Image</span>
+                      )}
+                    </td>
+
                   </tr>
                 ))}
                 {filteredHistory.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="history-empty">
+                    <td colSpan="7" className="history-empty">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                       <h3>No Records Found</h3>
                       <p>Try adjusting your search or date filters.</p>

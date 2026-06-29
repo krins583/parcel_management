@@ -202,7 +202,7 @@
   background-color: #ffffff;
   color: #64748b;
   font-weight: 700;
-  padding: 16px 30px;
+  padding: 16px 20px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -210,7 +210,7 @@
 }
 
 .history-table td {
-  padding: 20px 30px;
+  padding: 20px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
@@ -263,7 +263,7 @@
   align-items: center;
   gap: 8px;
   color: #475569;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 .date-cell svg { width: 16px; color: #94a3b8; }
@@ -279,8 +279,49 @@
   font-size: 13px;
   font-weight: 700;
   border: 1px solid #a7f3d0;
+  white-space: nowrap;
 }
 .staff-badge svg { width: 14px; }
+.created-badge { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+
+/* 🚀 Naya Image Button */
+.btn-view-image-history {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-view-image-history:hover {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+/* 🚀 Naya Modal CSS */
+.history-image-modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+  z-index: 999999; display: flex; align-items: center; justify-content: center;
+}
+.history-image-modal-content {
+  position: relative; max-width: 90%; max-height: 90vh;
+  background: white; padding: 10px; border-radius: 20px;
+}
+.history-modal-img {
+  max-width: 100%; max-height: calc(90vh - 60px); border-radius: 12px; object-fit: contain;
+}
+.history-close-modal-btn {
+  position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6);
+  color: white; border: none; padding: 8px 16px; border-radius: 50px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.2s;
+}
+.history-close-modal-btn:hover { background: #ef4444; }
 
 /* Empty & Loading States */
 .history-loading { padding: 80px; text-align: center; color: #64748b; font-weight: 600; }
@@ -310,6 +351,3 @@
   .btn-export { flex: 1; justify-content: center; }
   .search-group { max-width: 100%; }
 }
-
-/* ParcelHistory.css ke sabse end mein add karein */
-.created-badge { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
